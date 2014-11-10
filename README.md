@@ -189,7 +189,7 @@ Here is a good starting point (vendor perfixes have been removed to provide a mo
 #### goTo(int)
 Goes to the slide designed by the argument
 
-### next(bool), previous(bool)
+#### next(bool), previous(bool)
 what is says. If `true` is passed, will wrap to the last/first slide if a limit is reached.
 
 #### slides(array|string)
