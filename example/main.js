@@ -4,8 +4,14 @@ window.v = Vaseline('Canvas')
 	.suffix('.jpg')
 	.slides('00..18')
 	.cover()
-	.resolution(.2)
+	.resolution(1)
 	.resize()
 	.autoResize()
 	.goTo(0)
 ;
+window.changeResolution = function(res){
+	res = parseFloat(res);
+	if(isNaN(res)){return;}
+	v.resolution(res);
+	v.redraw();
+}
