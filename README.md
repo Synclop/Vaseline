@@ -18,7 +18,7 @@ or
 
 ## Usage
 
-live example [here](http://synclop.github.io/Vaseline/).
+live example [here](http://synclop.github.io/Vaseline/), source of the example [here](//github.com/Synclop/Vaseline/tree/master/example)
 
 ```js
 var v = Vaseline('Canvas') //id of the element to append the slider to
