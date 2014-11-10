@@ -1,6 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var Vaseline = require('../index.js')
-window.v = Vaseline('Canvas')
+var Container = document.getElementById('Canvas')
+var previousLink = null;
+window.v = Vaseline(Container)
 	.prefix('images/')
 	.suffix('.jpg')
 	.slides('00..18')
@@ -8,6 +10,12 @@ window.v = Vaseline('Canvas')
 	.resolution(1)
 	.resize()
 	.autoResize()
+	.onShow(function(evt,slide){
+		var linkId = 'link-'+slide.id();
+		if(previousLink){previousLink.className='';}
+		previousLink = document.getElementById(linkId);
+		previousLink.className = 'active';
+	})
 	.goTo(0)
 ;
 window.changeResolution = function(res){
@@ -16,6 +24,21 @@ window.changeResolution = function(res){
 	v.resolution(res);
 	v.redraw();
 }
+
+var hammertime = new Hammer(Container, {});
+
+hammertime.on('swipeleft',function(evt){
+	v.next();
+})
+hammertime.on('swiperight',function(evt){
+	v.previous();
+})
+hammertime.on('pinchin',function(){
+	v.contain();
+})
+hammertime.on('pinchout',function(){
+	v.cover();
+})
 },{"../index.js":2}],2:[function(require,module,exports){
 module.exports = require('./lib');
 },{"./lib":3}],3:[function(require,module,exports){
@@ -24,6 +47,101 @@ module.exports = require('./lib');
 	else if (typeof define == 'function' && typeof define.amd == 'object'){define(definition);}
 	else{this[name] = definition();}
 }('Vaseline',function(){
+
+	var EventEmitter = {
+		on:function(evt,fn){
+			if(Vaseline.isFunction(evt)){
+				fn = evt;
+				evt = '*';
+			}
+			if(!this._events){this._events = {};}
+			if(!this._events[evt]){this._events[evt] = [];}
+			this._events[evt].push(fn);
+			return this;
+		}
+	,	off:function(evt,fn){
+			if(this._events && this._events[evt]){
+				if(fn){
+					var index = this._events.indexOf(fn);
+					if(index>=0){
+						this._events.splice(index,1);
+					}
+				}
+				else{
+					this._events[evt] = [];
+				}
+			}
+			return this;
+		}
+	,	emit:function(evt,args,bindTo){
+			if(!this._events){return this;}
+			if(!bindTo){bindTo = this;}
+			args = (args || []);
+			if(args[0]!=evt){
+				args.unshift(evt);
+			}
+			function dispatch(evts,bindTo){
+				var i = 0
+				,	l = evts.length
+				;
+				for(i;i<l;i++){
+					fn = evts[i];
+					fn.apply(bindTo,args);
+				}		
+			}
+			var evts,fn;
+			if(this._events && this._events[evt] && this._events[evt].length){
+				evts = this._events[evt];
+				dispatch(evts,bindTo);
+			}
+			if(this._events && this._events['*'] && this._events['*'].length){
+				evts = this._events['*'];
+				dispatch(evts,bindTo);
+			}
+			return this;
+		}
+	,	relayEvent:function(obj,evt){
+			var that = this;
+			if(obj && obj.on){
+				obj.on(evt,function(){
+					var bindTo = this;
+					var args = [];
+					for(var i = 0, l = arguments.length;i<l;i++){
+						args.push(arguments[i]);
+					}
+					var evt = args.shift();
+					that.emit(evt,args,bindTo);
+				});
+			}
+		}
+	,	removeAllEvents:function(){
+			if(this._events){
+				this._events = {};
+			}
+		}
+	};
+
+	EventEmitter.trigger = EventEmitter.emmit;
+	EventEmitter.addEventListener = EventEmitter.on;
+	EventEmitter.removeEventListener = EventEmitter.off;
+
+	function createShortcutEventsHandlers(obj,Events){
+		var makeFunc = function(name){
+			return function(fn){
+				return this.on(name,fn);
+			};
+		};
+		for(var n in Events){
+			obj['on'+Events[n][0].toUpperCase()+Events[n].substr(1)] = makeFunc(Events[n]);
+		}
+	}
+
+	var VaselineEvents = {
+		LOAD:'load'
+	,	SHOW:'show'
+	,	RESIZE:'resize'
+	,	START:'start'
+	};
 
 	var instances = [];
 
@@ -43,7 +161,7 @@ module.exports = require('./lib');
 	,	_buffer: 3
 	,	_id: 0
 	,	_sizing:'contain'
-	}
+	};
 
 
 	var VaselineMethods =  {
@@ -112,6 +230,7 @@ module.exports = require('./lib');
 				display.style.height = height+'px';
 			}
 			this.each('resetPosition');
+			this.emit(Vaseline.Events.RESIZE);
 			return this;
 		}
 	,	autoResize:function(stop){
@@ -157,22 +276,23 @@ module.exports = require('./lib');
 	,	makeSlide:function(src,i){
 			return VaselineImage(this,{
 				src: this._prefix+src+this._suffix
-			,	callback: this.onLoad
+			,	callback: this.whenLoad
 			,	id:i
 			});
 		}
-	,	onLoad:function(err,slide){
+	,	whenLoad:function(err,slide){
 			if(slide.id() == this.comingUp()){
 				var direction = this.comingUp()>this.current() ? 'forward':'backward';
 				this._wrapper.className = this._wrapper.className.replace(/ vaseline-loading/,'');
 				this._currentSlide = this._nextSlide;
+				this.emit(Vaseline.Events.LOAD,[slide]);
 				this.show(slide,direction);
 			}
 		}
 	,	show:function(slide,direction){
 			var currentDisplay = this._displays[this._currentDisplay];
-			var nextDisplayId = this._currentDisplay==0?1:0;
-			direction = direction || 'forward'
+			var nextDisplayId = this._currentDisplay===0?1:0;
+			direction = direction || 'forward';
 			var nextDisplay = this._displays[nextDisplayId];
 			this.draw(nextDisplay,slide);
 			currentDisplay.className = 'vaseline-display vaseline-inactive vaseline-'+direction;
@@ -180,10 +300,11 @@ module.exports = require('./lib');
 			this._currentDisplay = nextDisplayId;
 			this._previousSlides.push(slide.id());
 			this.prune();
-			this.logLoadedImages();
+			this.emit(Vaseline.Events.SHOW,[slide]);
 			return this;
 		}
 	,	cover:function(){
+			if(this._sizing=='cover'){return this;}
 			this._sizing = 'cover';
 			if(this._slides.length){
 				this.each('resetPosition');
@@ -192,6 +313,7 @@ module.exports = require('./lib');
 			return this;
 		}
 	,	contain:function(){
+			if(this._sizing=='contain'){return this;}
 			this._sizing = 'contain';
 			if(this._slides.length){
 				this.each('resetPosition');
@@ -244,6 +366,9 @@ module.exports = require('./lib');
 				}
 			}
 			slide.load();
+			if(!slide.hasLoaded()){
+				this.emit(Vaseline.Events.START,[slide]);
+			}
 			return this;
 		}
 	,	next:function(loop){
@@ -299,7 +424,7 @@ module.exports = require('./lib');
 		 * @return {SlideList}
 		 */
 	,	each:function(obj){
-			var i = 0;
+			var i = 0,n;
 			if(this._slides.length){
 				var slide = this._slides[i];
 				if(typeof obj == 'string'){
@@ -324,17 +449,32 @@ module.exports = require('./lib');
 			}
 			return this;
 		}
-	}
+	};
 
 	var hasOwn = Object.prototype.hasOwnProperty;
+	var debounce = function(func, wait, immediate) {
+		var timeout;
+		return function debounced(){
+			var context = this, args = arguments;
+			var later = function() {
+				timeout = null;
+				if (!immediate) func.apply(context, args);
+			};
+			var callNow = immediate && !timeout;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+			if (callNow) func.apply(context, args);
+		};
+	};
+
 	var Utils = {
+		Events: VaselineEvents
 		/**
 		 * Is set to true if the browser supports canvas
 		 * @type {Boolean}
 		 */
-		supportsCanvas: ('getContext' in document.createElement('canvas'))
+	,	supportsCanvas: ('getContext' in document.createElement('canvas'))
 	,	transform: (function(){
-			return false;
 			var prefixes = ['transform','WebkitTransform','MozTransform','OTransform','msTransform'];
 			for(var i = 0, l = prefixes.length; i < l; i++) {
 				if(document.createElement('div').style[prefixes[i]] !== undefined) {
@@ -351,20 +491,7 @@ module.exports = require('./lib');
 		 * leading edge, instead of the trailing.
 		 * @attribute http://davidwalsh.name/javascript-debounce-function
 		 */
-	,	debounce: function(func, wait, immediate) {
-			var timeout;
-			return function debounced(){
-				var context = this, args = arguments;
-				var later = function() {
-					timeout = null;
-					if (!immediate) func.apply(context, args);
-				};
-				var callNow = immediate && !timeout;
-				clearTimeout(timeout);
-				timeout = setTimeout(later, wait);
-				if (callNow) func.apply(context, args);
-			};
-		}
+	,	debounce: debounce
 	,	autoResize:function(instanceId,stop){
 			if(!stop){
 				instances[instanceId]._autoResize = true;
@@ -374,15 +501,6 @@ module.exports = require('./lib');
 			for(var i=0,l=instances.length;i<l;i++){
 				if(instances[i]._autoResize){
 					if(!Vaseline._autoResizeStarted){
-						if(!Vaseline.onResize){
-							Vaseline.onResize = Utils.debounce(function(){
-								for(var i=0,l=instances.length;i<l;i++){
-									if(instances[i]._autoResize){
-										instances[i].triggerAutoResize();
-									}
-								}
-							}, 250);
-						}
 						Vaseline._autoResizeStarted = true;
 						window.addEventListener('resize',Vaseline.onResize);
 					}
@@ -392,7 +510,13 @@ module.exports = require('./lib');
 			Vaseline._autoResizeStarted = false;
 			window.removeEventListener('resize',Vaseline.onResize);
 		}
-	,	onResize: null
+	,	onResize: debounce(function(){
+			for(var i=0,l=instances.length;i<l;i++){
+				if(instances[i]._autoResize){
+					instances[i].triggerAutoResize();
+				}
+			}
+		}, 250)
 		/**
 		 * Returns the image proportion type
 		 * @param  {Int} width
@@ -538,7 +662,7 @@ module.exports = require('./lib');
 			for(n in props){
 				if(!(n[0] == '_' && n[1]!=='_')){continue;}
 				if(!hasOwn.call(props,n)){continue;}
-				var funcName=n.replace(/^_/,'')
+				var funcName=n.replace(/^_/,'');
 				if(hasOwn.call(methods,funcName)){continue;}
 				methods[funcName] = Utils.makeChainableGetterSetter(methods,n,funcName);
 			}
@@ -579,7 +703,7 @@ module.exports = require('./lib');
 							return this;
 						}
 						return this[n];
-					}
+					};
 				}
 			,	funcSet=null
 			,	funcGet=null
@@ -588,7 +712,7 @@ module.exports = require('./lib');
 			funcSet = obj['_set'+n];
 			funcGet = obj['_get'+n];
 			if(funcSet && funcGet){
-				func = makeFunctionWithSetAndGet(funcName,funcSet,funcGet)
+				func = makeFunctionWithSetAndGet(funcName,funcSet,funcGet);
 			}
 			else if(funcSet){
 				func = makeFunctionWithSet(funcName,n,funcSet);
@@ -692,6 +816,9 @@ module.exports = require('./lib');
 	}
 	Utils.extend(Vaseline,Utils);
 	Vaseline.extend(Vaseline.prototype,VaselineMethods);
+	Vaseline.extend(Vaseline.prototype,EventEmitter);
+	createShortcutEventsHandlers(Vaseline.prototype,Vaseline.Events);
+
 
 	var ImageProperties = {
 		_img:null
@@ -705,7 +832,7 @@ module.exports = require('./lib');
 	,	_vaseline:null
 	,	_id:0
 	,	_sizing:'contain'
-	}
+	};
 
 	var ImageMethods = {
 		img:function(){if(this._img){return this._img;}}
@@ -713,7 +840,7 @@ module.exports = require('./lib');
 	,	hasError:function(){return this._hasError;}
 	,	hasStarted:function(){return this._hasStarted;}
 	,	width:function(){return this._width;}
-	,	height:function(){return this._height}
+	,	height:function(){return this._height;}
 	,	init:function(vaseline,props){
 			if(!vaseline || !(vaseline instanceof Vaseline)){
 				throw new Error(vaseline+' is not a valid Vaseline instance');
@@ -813,7 +940,7 @@ module.exports = require('./lib');
 			}
 			return this._position;
 		}
-	}
+	};
 
 	Vaseline.makeGettersSettersFromProps(ImageProperties,ImageMethods);
 
