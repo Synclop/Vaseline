@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 var fs = require('fs')
 ,	stylus = require('stylus')
 ,	jade = require('jade')

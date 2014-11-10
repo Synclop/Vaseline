@@ -1,7 +1,9 @@
 doctype
 html
 	head
+		title Vaseline
 		link(rel="stylesheet" href="main.css")
+		meta(name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1")
 	body
 		#Canvas
 			.loading
@@ -11,12 +13,14 @@ html
 			h3 high performance canvas slider
 			a(onclick="javascript:v.previous(true);") previous
 			each i in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
-				a(onclick="javascript:v.goTo("+i+");")=(i+1)
+				a(id="link-"+i onclick="javascript:v.goTo("+i+");")=(i+1)
 			a(onclick="javascript:v.next(true);") next
+			br
 			a(onclick="javascript:v.switchSizing();") cover/contain
 			br
 			label(for="res") resolution:
 				input(id="res" type="number" onchange="javascript:changeResolution(this.value);" value=1 min=.1 max=1)
 		a(href="https://github.com/Synclop/Vaseline")
 			img(style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png")
+		script(src="//cdnjs.cloudflare.com/ajax/libs/hammer.js/1.1.3/hammer.min.js")
 		script(src="main.js")
