@@ -1,0 +1,152 @@
+@import nib
+
+body
+	font-family "Helvetica"
+	text-align center
+	color #444
+	margin 0
+
+h1
+	font-size 65px
+	color white
+	text-shadow 1px 1px 5px rgba(0,0,0,.5)
+	
+#Wrapper
+	position absolute
+	top 0
+	left 0
+	right 0
+	a
+		background white
+		margin .1em
+		padding .2em
+
+#Canvas
+	transform translateZ(0)
+	position absolute
+	overflow hidden
+	top 0
+	left 0
+	width 100%
+	height 100%
+	min-width 500px
+	min-height 200px
+	margin 0 auto
+	background #000
+	.loading
+		transition opacity .2s ease-in 0s, top 0s linear .2s
+		opacity 0
+		position absolute
+		z-index 2
+		top 100%
+		left 0
+		right 0
+		bottom 0
+		background rgba(0,0,0,.5)
+		color white
+		h3
+			display inline-block
+			vertical-align middle
+		&:before
+			content ''
+			display inline-block
+			vertical-align middle
+			height 100%
+	&.vaseline-loading
+		.loading
+			transition opacity 1s ease-in 0s, top 0s linear 0s
+			opacity 1
+			top 0
+			
+
+@keyframes ExitTranslateForward
+	0%
+		transform translateX(0)
+	100%
+		transform translateX(-100%)
+
+@keyframes EnterTranslateForward
+	0%
+		transform translateX(100%)
+	100%
+		transform translateX(0)
+
+@keyframes ExitTranslateBackward
+	0%
+		transform translateX(0)
+	100%
+		transform translateX(100%)
+
+@keyframes EnterTranslateBackward
+	0%
+		transform translateX(-100%)
+	100%
+		transform translateX(0)
+
+@keyframes ExitPositionForward
+	0%
+		left 0
+	100%
+		left -100%
+
+@keyframes EnterPositionForward
+	0%
+		left 100%
+	100%
+		left 0
+
+@keyframes ExitPositionBackward
+	0%
+		left 0
+	100%
+		left 100%
+
+@keyframes EnterPositionBackward
+	0%
+		left -100%
+	100%
+		left 0
+
+.vaseline-container
+	.vaseline-display
+		top 0
+		transition-property left
+		transition-timing-function ease-out
+		transition-duration 1s
+		animation-timing-function ease-out
+		animation-duration 1s
+		animation-fill-mode forwards
+		transform translateY(100%)
+	&.vaseline-supports-transforms
+		.vaseline-display
+			animation-name ExitTranslateForward
+			left 0
+		.vaseline-active
+			transform translateX(0)
+			&.vaseline-forward
+				animation-name EnterTranslateForward
+			&.vaseline-backward
+				animation-name EnterTranslateBackward
+		.vaseline-inactive
+			transform translateX(-100%)
+			&.vaseline-forward
+				animation-name ExitTranslateForward
+			&.vaseline-backward
+				animation-name ExitTranslateBackward
+	&.vaseline-no-transforms
+		.vaseline-display
+			top -100%
+			animation-name ExitPositionForward
+			left 100%
+		.vaseline-active
+			left 0
+			&.vaseline-forward
+				animation-name EnterPositionForward
+			&.vaseline-backward
+				animation-name EnterPositionBackward
+		.vaseline-inactive
+			left -100%
+			&.vaseline-forward
+				animation-name ExitPositionForward
+			&.vaseline-backward
+				animation-name ExitPositionBackward

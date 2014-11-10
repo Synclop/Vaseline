@@ -1,0 +1,16 @@
+(function(name, definition) {
+	if (typeof module != 'undefined'){module.exports = definition();}
+	else if (typeof define == 'function' && typeof define.amd == 'object'){define(definition);}
+	else{this[name] = definition();}
+}('Vaseline',function(){
+
+	<% include Utils.js %>
+	<% include EventEmitter.js %>
+	<% include Slide.js %>
+	<% include Drivers.js %>
+	<% include Vaseline.js %>
+
+	return Vaseline;
+
+
+}));

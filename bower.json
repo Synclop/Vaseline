@@ -1,0 +1,29 @@
+{
+  "name": "vaseline",
+  "main": "index.js",
+  "version": "0.5.0",
+  "homepage": "https://github.com/Synclop/Vaseline",
+  "authors": [
+    "xananax@synclop.com"
+  ],
+  "description": "A very simple canvas-based slider",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "slider",
+    "canvas"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "example",
+    "_trash"
+  ]
+}
