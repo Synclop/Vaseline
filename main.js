@@ -1,0 +1,11 @@
+var Vaseline = require('../index.js')
+window.v = Vaseline('Canvas')
+	.prefix('images/')
+	.suffix('.jpg')
+	.slides('00..18')
+	.cover()
+	.resolution(.2)
+	.resize()
+	.autoResize()
+	.goTo(0)
+;
