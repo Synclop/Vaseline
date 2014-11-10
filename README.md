@@ -232,5 +232,25 @@ each('load');
 
 -----
 
+## Events
+
+Event handlers always receive the event name as a first argument.
+
+#### on(str,function), off(str,function)
+where str is one of:
+
+- `show` called when a slide is shown. The event handler receives the slide as a second argument
+- `load` called when a slide is loaded; note that it does not necessarily coincide with `show`, as a slide might have been set to load, but the user navigated to another slide before the loading finished; in which case, the slide will continue to load, but another slide will be shown. The event handler receives the slide as a second argument.
+- `start` called when a slide starts loading. Note that by the time the event is called, the slide has already started loading. The event handler receives the slide as a second argument.
+- `resize` called when the Vaseline instance resizes.
+
+#### Shortcut handlers
+Each handler has a shortcut in the form of `'on'+Handler`:
+
+- `onShow(function)`
+- `onLoad(function)`
+- `onStart(function)`
+- `onResize(function)`
+
 ## License
 MIT
