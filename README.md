@@ -18,6 +18,8 @@ or
 
 ## Usage
 
+live example (here)[http://synclop.github.io/Vaseline/]
+
 ```js
 var v = Vaseline('Canvas') //id of the element to append the slider to
     .prefix('images/') //will get prepended to all images sources
