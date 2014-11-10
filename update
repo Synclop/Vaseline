@@ -1,1 +1,2 @@
+#!/usr/bin/env bash
 node example/compile.js && git add -A && git commit && git push && git subtree push --prefix example origin gh-pages 
