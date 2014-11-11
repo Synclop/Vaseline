@@ -161,6 +161,8 @@ module.exports = require('./lib');
 	,	_buffer: 3
 	,	_id: 0
 	,	_sizing:'contain'
+	,	_preloadBuffer:2
+	,	_preloaded:[]
 	};
 
 
@@ -200,11 +202,15 @@ module.exports = require('./lib');
 		}
 	,	logLoadedImages:function(){
 			var loaded = [];
+			var started = []
 			this.each(function(){
-				if(this.hasLoaded() || this.hasStarted()){
+				if(this.hasLoaded()){
 					loaded.push(this.id());
+				}else if(this.hasStarted()){
+					started.push(this.id());
 				}
 			});
+			console.log(loaded.length+' images loaded: ',loaded,'and '+started.length+' images started but not loaded yet:',started);
 		}
 	,	resolution: function(res){
 			if(!arguments.length){return this._resolution;}
@@ -338,6 +344,22 @@ module.exports = require('./lib');
 				slide.free();
 			}
 		}
+	,	preload:function(slide){
+			var id = slide.id()
+			,	i = id+1
+			,	slideId
+			;
+			while(this._preloaded.length){
+				slideId = this._preloaded.shift();
+				if(slideId!=this._currentSlide && slideId!=this._nextSlide){
+					this._slides[slideId].free();
+				}
+			}
+			while((this._preloaded.length < this._preloadBuffer) && this._slides[i]){
+				this._preloaded.push(this._slides[i++].load().id());
+			}
+			return this;
+		}
 	,	draw:function(display,slide){
 			var p = slide.position(display,this._sizing);
 			var context = display.getContext('2d');
@@ -369,6 +391,7 @@ module.exports = require('./lib');
 			if(!slide.hasLoaded()){
 				this.emit(Vaseline.Events.START,[slide]);
 			}
+			this.preload(slide);
 			return this;
 		}
 	,	next:function(loop){
@@ -820,6 +843,14 @@ module.exports = require('./lib');
 	createShortcutEventsHandlers(Vaseline.prototype,Vaseline.Events);
 
 
+	var ImageEvents = {
+		FREE:'free'
+	,	LOAD:'load'
+	,	START:'start'
+	,	ERROR:'error'
+	,	RESIZE:'resize'
+	}
+
 	var ImageProperties = {
 		_img:null
 	,	_src:null
@@ -878,10 +909,11 @@ module.exports = require('./lib');
 			this._hasStarted = true;
 			var that = this;
 			var img = new Image();
-			img.onerror = function(err){that.onError(err);};
-			img.onload = function(){that.onLoad();};
+			img.onerror = function(err){that.whenError(err);};
+			img.onload = function(){that.whenLoad();};
 			this._img = img;
 			img.src = this._src;
+			this.emit(VaselineImage.Events.START);
 			return this;
 		}
 	,	free:function(){
@@ -893,26 +925,28 @@ module.exports = require('./lib');
 				this._hasStarted = false;
 				this._width = 0;
 				this._height = 0;
+				this.emit(VaselineImage.Events.FREE);
 			}
 		}
-	,	onError: function(err){
+	,	whenError: function(err){
 			this.free();
 			this._hasError = true;
 			if(this._callback){
 				this._callback.call(this._vaseline,err||true,this);
 			}
+			this.emit(VaselineImage.Events.ERROR);
 			return this;
 		}
-	,	onLoad: function(){
+	,	whenLoad: function(){
 			if(this._img){
 				var img = this._img;
 				if ('naturalHeight' in img) {
 					if (img.naturalHeight + img.naturalWidth === 0) {
-						this.onError();
+						this.whenError();
 						return this;
 					}
 				} else if (img.width + img.height === 0) {
-					this.onError();
+					this.whenError();
 					return this;
 				}
 				this._hasLoaded = true;
@@ -921,6 +955,7 @@ module.exports = require('./lib');
 				if(this._callback){
 					this._callback.call(this._vaseline,false,this);
 				}
+				this.emit(VaselineImage.Events.LOAD);
 			}
 			return this;
 		}
@@ -937,6 +972,7 @@ module.exports = require('./lib');
 			}
 			if(!this._position){
 				this._position = Vaseline.calculateImageSize(this._img,this._container,this._sizing);
+				this.emit(VaselineImage.Events.RESIZE);
 			}
 			return this._position;
 		}
@@ -949,8 +985,10 @@ module.exports = require('./lib');
 		Vaseline.extend(this,ImageProperties);
 		this.init(vaseline,src);
 	}
+	VaselineImage.Events = ImageEvents;
 	Vaseline.extend(VaselineImage.prototype,ImageMethods);
-
+	Vaseline.extend(VaselineImage.prototype,EventEmitter);
+	createShortcutEventsHandlers(VaselineImage.prototype,VaselineImage.Events);
 	return Vaseline;
 
 }));
