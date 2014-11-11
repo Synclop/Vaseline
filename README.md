@@ -247,6 +247,8 @@ where str is one of:
 - `start` called when a slide starts loading. Note that by the time the event is called, the slide has already started loading. The event handler receives the slide as a second argument.
 - `resize` called when the Vaseline instance resizes.
 
+You can use `addEventListener` and `removeEventListener` instead of `on()` and `off()` if you prefer that syntax.
+
 #### Shortcut handlers
 Each handler has a shortcut in the form of `'on'+Handler`:
 
@@ -254,6 +256,9 @@ Each handler has a shortcut in the form of `'on'+Handler`:
 - `onLoad(function)`
 - `onStart(function)`
 - `onResize(function)`
+
+#### once(str,fn)
+Works like `on()`, but will run the function only once.
 
 ## License
 MIT
