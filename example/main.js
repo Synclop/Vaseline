@@ -24,7 +24,7 @@ window.changeResolution = function(res){
 	v.redraw();
 }
 
-var hammertime = new Hammer(Container, {});
+var hammertime = new Hammer(document.getElementById('Wrapper'), {});
 
 hammertime.on('swipeleft',function(evt){
 	v.next();
