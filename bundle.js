@@ -59,6 +59,19 @@ module.exports = require('./lib');
 			this._events[evt].push(fn);
 			return this;
 		}
+	,	once:function(evt,fn){
+			var that = this;
+			var func = function(){
+				var args = [];
+				for(var i = 0, l = arguments.length;i<l;i++){
+					args.push(arguments[i]);
+				}
+				that.off(evt,func);
+				fn.apply(this,args);
+			}
+			this.on(evt,func);
+			return this;
+		}
 	,	off:function(evt,fn){
 			if(this._events && this._events[evt]){
 				if(fn){
@@ -370,8 +383,15 @@ module.exports = require('./lib');
 	,	redraw:function(){
 			var display = this._displays[this._currentDisplay];
 			var slide = this._slides[this._currentSlide];
+			var that = this;
 			if(display && slide){
-				this.draw(display,slide);
+				if(!slide.hasLoaded()){
+					slide.once(function(){
+						that.draw(display,slide);
+					}).load();
+				}else{
+					that.draw(display,slide);
+				}
 			}
 			return this;
 		}
@@ -591,8 +611,10 @@ module.exports = require('./lib');
 						case 'landscape':
 							switch(proportion){
 								case 'landscape':
-									height = containerHeight;
-									width = height*ratio;
+									width = containerWidth;
+									height = width/ratio;
+									//height = containerHeight;
+									//width = height*ratio;
 								break;
 								case 'portrait':
 								case 'square':
