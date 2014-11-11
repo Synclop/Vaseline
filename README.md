@@ -207,7 +207,7 @@ resizes the slider to it's parent container size. You're probably better off usi
 The maximum number of images to keep in memory. Defaults to 3. Keep in mind that discarded images are not necessarily removed from memory; they are simply made available to the garbage collector.
 
 #### preloadBuffer(int)
-The number of images to preload. Defaults to 2. Note that preloaded images are independant from 
+The number of images to preload. Defaults to 2. Note that preloaded images are independant from the normal buffer.
 
 #### cover(), contain()
 Sets the image sizing to `cover` or `contain` respectively. Behaviour is similar to the CSS `image-sizing` directive.
