@@ -1,7 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var Vaseline = require('../index.js')
 var Container = document.getElementById('Canvas')
-var previousLink = null;
+var previousActiveLink = null;
+var previousSoonActiveLink = null;
 window.v = Vaseline(Container)
 	.prefix('images/')
 	.suffix('.jpg')
@@ -12,9 +13,15 @@ window.v = Vaseline(Container)
 	.autoResize()
 	.onShow(function(evt,slide){
 		var linkId = 'link-'+slide.id();
-		if(previousLink){previousLink.className='';}
-		previousLink = document.getElementById(linkId);
-		previousLink.className = 'active';
+		if(previousActiveLink){previousActiveLink.className='';}
+		previousActiveLink = document.getElementById(linkId);
+		previousActiveLink.className = 'active';
+	})
+	.onStart(function(evt,slide){
+		var linkId = 'link-'+slide.id();
+		if(previousSoonActiveLink){previousSoonActiveLink.className='';}
+		previousSoonActiveLink = document.getElementById(linkId);
+		previousSoonActiveLink.className = 'active-soon';
 	})
 	.goTo(0)
 ;

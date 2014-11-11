@@ -1,6 +1,7 @@
 var Vaseline = require('../index.js')
 var Container = document.getElementById('Canvas')
-var previousLink = null;
+var previousActiveLink = null;
+var previousSoonActiveLink = null;
 window.v = Vaseline(Container)
 	.prefix('images/')
 	.suffix('.jpg')
@@ -11,9 +12,15 @@ window.v = Vaseline(Container)
 	.autoResize()
 	.onShow(function(evt,slide){
 		var linkId = 'link-'+slide.id();
-		if(previousLink){previousLink.className='';}
-		previousLink = document.getElementById(linkId);
-		previousLink.className = 'active';
+		if(previousActiveLink){previousActiveLink.className='';}
+		previousActiveLink = document.getElementById(linkId);
+		previousActiveLink.className = 'active';
+	})
+	.onStart(function(evt,slide){
+		var linkId = 'link-'+slide.id();
+		if(previousSoonActiveLink){previousSoonActiveLink.className='';}
+		previousSoonActiveLink = document.getElementById(linkId);
+		previousSoonActiveLink.className = 'active-soon';
 	})
 	.goTo(0)
 ;
