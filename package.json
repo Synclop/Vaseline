@@ -1,6 +1,6 @@
 {
   "name": "vaseline",
-  "version": "0.0.5",
+  "version": "0.5.0",
   "description": "A very simple canvas-based slider",
   "main": "index.js",
   "directories": {
