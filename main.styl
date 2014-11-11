@@ -10,15 +10,19 @@ h1
 	font-size 65px
 	color white
 	text-shadow 1px 1px 5px rgba(0,0,0,.5)
+	margin .1em
 	
+h3
+	margin .1em
+
 #Wrapper
 	position absolute
 	top 0
 	left 0
 	right 0
-	a
+	bottom 0
+	a,label
 		display inline-block
-		float left
 		background white
 		transition background 1s
 		margin .1em
@@ -27,6 +31,16 @@ h1
 		&.active
 			background #990000
 			color white
+.links,.options
+	width 100%
+	float left
+	clear both
+.navigation
+	float left
+	position absolute
+	width 100%
+	left 0
+	bottom 0
 
 #Canvas
 	transform translateZ(0)
@@ -52,6 +66,10 @@ h1
 		h3
 			display inline-block
 			vertical-align middle
+			animation-name Pulse
+			animation-duration 1.5s
+			animation-iteration-count infinite
+			animation-timing-function linear
 		&:before
 			content ''
 			display inline-block
@@ -62,6 +80,14 @@ h1
 			transition opacity 1s ease-in 0s, top 0s linear 0s
 			opacity 1
 			top 0
+
+@keyframes Pulse
+	0%
+		opacity .2
+	70%
+		opacity 1
+	100%
+		opacity .2
 			
 
 @keyframes ExitTranslateForward
