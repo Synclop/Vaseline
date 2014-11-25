@@ -5,7 +5,6 @@ var previousSoonActiveLink = null;
 window.v = Vaseline(Container)
 	.prefix('images/')
 	.suffix('.jpg')
-	.slides('00..18')
 	.cover()
 	.resolution(1)
 	.resize()
@@ -22,6 +21,7 @@ window.v = Vaseline(Container)
 		previousSoonActiveLink = document.getElementById(linkId);
 		previousSoonActiveLink.className = 'active-soon';
 	})
+	.slides('00..18')
 	.goTo(0)
 ;
 window.changeResolution = function(res){

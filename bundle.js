@@ -6,7 +6,6 @@ var previousSoonActiveLink = null;
 window.v = Vaseline(Container)
 	.prefix('images/')
 	.suffix('.jpg')
-	.slides('00..18')
 	.cover()
 	.resolution(1)
 	.resize()
@@ -23,6 +22,7 @@ window.v = Vaseline(Container)
 		previousSoonActiveLink = document.getElementById(linkId);
 		previousSoonActiveLink.className = 'active-soon';
 	})
+	.slides('00..18')
 	.goTo(0)
 ;
 window.changeResolution = function(res){
@@ -290,7 +290,9 @@ module.exports = require('./lib');
 		 */
 	,	slides:function(slides){
 			if(!arguments.length){return this._slides;}
-			if(slides===false){this._slides=[];return this;}
+			if(slides===false){
+				return this.clearSlides();
+			}
 			if(slides.match(/\d+\.\.\d+/)){
 				slides = Vaseline.arrayFromRange(slides);
 			}
@@ -298,6 +300,13 @@ module.exports = require('./lib');
 				this._slides.push(this.makeSlide(slides[i],i));
 			}
 			return this;
+		}
+	,	clearSlides:function(){
+			var l = this._slides.length-1;
+			while(l){
+				this._slides[l--].destroy();
+			}
+			this._slides = [];
 		}
 	,	makeSlide:function(src,i){
 			return VaselineImage(this,{
@@ -991,6 +1000,10 @@ module.exports = require('./lib');
 	,	resetPosition:function(){
 			this._position = false;
 			return this;
+		}
+	,	destroy:function(){
+			this.free();
+			this.removeAllEvents();
 		}
 	,	position:function(container,sizing){
 			if(sizing){this._sizing=sizing;}
