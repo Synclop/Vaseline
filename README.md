@@ -192,10 +192,13 @@ Goes to the slide designed by the argument
 #### next(bool), previous(bool)
 what is says. If `true` is passed, will wrap to the last/first slide if a limit is reached.
 
-#### slides(array|string)
+#### slides(boolean|array|string)
  Sets slides. Each time this function is called, slides are added to the previous batch. If you want to edit the array, call slides() without arguments and edit the resulting array.  
 If you want to empty the slides array, pass `false` as your argument.  
 If you pass a string of two number like so: `01..30`, it will create the array for you.
+
+#### clearSlides()
+Removes all slides. You can use this instead of `slides(false)` for more clarity.
 
 #### resolution(int)
 Sets the resolution. 1 is maximum resolution, and lower values are lower resolutions. You might want to set it dynamically if the framerate drops, using [FPSMeter](https://github.com/kaizouman/fpsmeter), for example.
